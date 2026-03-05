@@ -1,0 +1,20 @@
+# Python / Backend
+__pycache__/
+*.pyc
+.env
+backend/.venv/
+.venv/
+backend/.env
+
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# macOS / Windows
+.DS_Store
+Thumbs.db
+
+# Test Directory
+test_dir/
