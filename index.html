@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI File Organizer</title>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --bg-card: #141414;
+      --border: rgba(255,255,255,0.08);
+      --accent: #E8A020;
+      --accent-dim: rgba(232,160,32,0.08);
+      --text: #e8e8e8;
+      --text-2: #a0a0a0;
+      --text-muted: #606060;
+      --radius: 10px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container { max-width: 820px; margin: 0 auto; padding: 0 24px; }
+
+    /* Header */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+    }
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+    .header-links { display: flex; gap: 20px; }
+    .header-links a {
+      font-size: 13px;
+      color: var(--text-2);
+    }
+
+    /* Hero */
+    .hero { padding: 80px 0 60px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-family: monospace;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-dim);
+      border: 1px solid rgba(232,160,32,0.2);
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+      letter-spacing: 0.04em;
+    }
+    h1 {
+      font-size: clamp(28px, 5vw, 44px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.5px;
+      margin-bottom: 18px;
+      color: var(--text);
+    }
+    .hero-sub {
+      font-size: 16px;
+      color: var(--text-2);
+      line-height: 1.65;
+      max-width: 600px;
+      margin-bottom: 36px;
+    }
+    .cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; text-decoration: none; }
+    .btn-primary {
+      background: var(--accent);
+      color: #0d0d0d;
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    /* Terminal demo */
+    .terminal {
+      background: #0a0a0a;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 50px 0;
+    }
+    .terminal-bar {
+      background: #1a1a1a;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dot { width: 11px; height: 11px; border-radius: 50%; }
+    .dot-red { background: #ff5f57; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #28c941; }
+    .terminal-title {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: monospace;
+      margin-left: 8px;
+    }
+    .terminal-body { padding: 20px 20px; font-family: monospace; font-size: 13px; line-height: 1.8; }
+    .t-prompt { color: var(--accent); }
+    .t-cmd { color: var(--text); }
+    .t-out { color: var(--text-2); }
+    .t-ok { color: #28c941; }
+    .t-dim { color: var(--text-muted); }
+
+    /* Pipeline steps */
+    .section { margin: 60px 0; }
+    .section-label {
+      font-size: 11px;
+      font-family: monospace;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-family: monospace;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .step-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .step-desc { font-size: 13px; color: var(--text-2); line-height: 1.55; }
+
+    /* Features grid */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+    .card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .card-body { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+
+    /* Tech tags */
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .tag {
+      font-size: 11px;
+      font-family: monospace;
+      color: var(--text-2);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    /* Setup */
+    .code-block {
+      background: #0a0a0a;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      font-family: monospace;
+      font-size: 12.5px;
+      line-height: 1.8;
+      color: var(--text-2);
+      overflow-x: auto;
+      margin: 12px 0;
+    }
+    .code-block .cmd { color: var(--text); }
+    .code-block .cmt { color: var(--text-muted); }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 0;
+      margin-top: 60px;
+    }
+    .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .footer-text { font-size: 12px; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <span class="logo">AI File Organizer</span>
+      <div class="header-links">
+        <a href="https://github.com/akbknight/Ai-automation" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://akbknight.github.io" target="_blank" rel="noopener">Portfolio</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <section class="hero">
+      <div class="badge">FastAPI + React + Gemini 1.5 Flash</div>
+      <h1>Your messy folder,<br>organized in seconds.</h1>
+      <p class="hero-sub">
+        Point it at any directory. The AI reads file names, extensions, and content snippets — then moves everything into semantic folders like <code style="color:var(--accent)">MBA Coursework</code>, <code style="color:var(--accent)">Invoices</code>, or <code style="color:var(--accent)">Code Projects</code>. No rules to configure.
+      </p>
+      <div class="cta-row">
+        <a href="https://github.com/akbknight/Ai-automation" target="_blank" rel="noopener" class="btn btn-primary">View on GitHub</a>
+        <a href="#setup" class="btn btn-secondary">Setup Guide</a>
+      </div>
+    </section>
+
+    <!-- Terminal demo -->
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="dot dot-red"></div>
+        <div class="dot dot-yellow"></div>
+        <div class="dot dot-green"></div>
+        <span class="terminal-title">ai-file-organizer — live log</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="t-prompt">$</span> <span class="t-cmd">uvicorn main:app --reload</span></div>
+        <div class="t-dim">INFO: Application startup complete.</div>
+        <br>
+        <div class="t-out">Validating configuration...</div>
+        <div class="t-out">Scanning target directory: C:\Users\Akshay\Downloads</div>
+        <div class="t-out">Found 147 files across 12 extensions</div>
+        <br>
+        <div class="t-out">Extracting content snippets...</div>
+        <div class="t-ok">budget_q1_2025.xlsx          → Financials/</div>
+        <div class="t-ok">ITEC617_case_study.pdf       → MBA Coursework/</div>
+        <div class="t-ok">react_hooks_notes.md         → Code Projects/</div>
+        <div class="t-ok">passport_scan.jpg            → Identity Documents/</div>
+        <div class="t-ok">zoom_recording_april.mp4     → Recordings/</div>
+        <div class="t-out">...</div>
+        <br>
+        <div class="t-ok">Organized 147 files into 9 categories</div>
+        <div class="t-dim">0 conflicts, 0 errors — complete in 4.2s</div>
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <section class="section">
+      <p class="section-label">How It Works</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div>
+            <div class="step-title">Scan the directory</div>
+            <div class="step-desc">FastAPI backend walks the target folder and collects all file paths, sizes, and extensions.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div>
+            <div class="step-title">Extract content snippets</div>
+            <div class="step-desc">For text files, CSVs, markdown, code, and PDFs — reads the first 500 characters to give the AI real context beyond the filename.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div>
+            <div class="step-title">Gemini categorizes each file</div>
+            <div class="step-desc">Gemini 1.5 Flash receives the filename, extension, and content snippet. It decides the most logical semantic folder for each file based on actual meaning.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div>
+            <div class="step-title">Files are moved, logs stream live</div>
+            <div class="step-desc">The React frontend receives a real-time Server-Sent Events stream. Each file move appears in the log as it happens — no page refresh needed.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="section">
+      <p class="section-label">Features</p>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Context-aware categorization</div>
+          <div class="card-body">Reads actual file content — not just filenames — so <code>notes.txt</code> about taxes goes to Financials, not a generic Notes folder.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">PDF + text extraction</div>
+          <div class="card-body">Uses pypdf for PDFs and raw reads for code, markdown, CSV, and JSON. Handles 7+ file types without additional dependencies.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Real-time log stream</div>
+          <div class="card-body">FastAPI Server-Sent Events push each file move to the React UI as it happens. No polling, no wait.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Decoupled architecture</div>
+          <div class="card-body">Backend and frontend are fully independent — swap the React UI or replace the AI model without touching the other layer.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tech stack -->
+    <section class="section">
+      <p class="section-label">Tech Stack</p>
+      <div class="tags">
+        <span class="tag">Python 3.x</span>
+        <span class="tag">FastAPI</span>
+        <span class="tag">Google Gemini 1.5 Flash</span>
+        <span class="tag">React</span>
+        <span class="tag">Vite</span>
+        <span class="tag">Tailwind CSS</span>
+        <span class="tag">Lucide React</span>
+        <span class="tag">pypdf</span>
+        <span class="tag">Server-Sent Events</span>
+        <span class="tag">python-dotenv</span>
+      </div>
+    </section>
+
+    <!-- Setup -->
+    <section class="section" id="setup">
+      <p class="section-label">Local Setup</p>
+      <p style="font-size:13px;color:var(--text-2);margin-bottom:16px;">Requires Python 3.8+, Node.js 18+, and a Gemini API key.</p>
+
+      <div class="code-block">
+        <div class="cmt"># Clone and set up backend</div>
+        <div class="cmd">git clone https://github.com/akbknight/Ai-automation.git</div>
+        <div class="cmd">cd Ai-automation/backend</div>
+        <div class="cmd">python -m venv .venv && .venv\Scripts\activate</div>
+        <div class="cmd">pip install -r requirements.txt</div>
+        <br>
+        <div class="cmt"># Add your Gemini API key</div>
+        <div class="cmd">echo GEMINI_API_KEY=your_key_here > .env</div>
+        <div class="cmd">uvicorn main:app --reload</div>
+      </div>
+
+      <div class="code-block">
+        <div class="cmt"># In a second terminal — start the frontend</div>
+        <div class="cmd">cd ../frontend</div>
+        <div class="cmd">npm install && npm run dev</div>
+        <br>
+        <div class="cmt"># Open http://localhost:5173 and point it at any directory</div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <span class="footer-text">Built by <a href="https://akbknight.github.io">Akshay Kumar</a></span>
+      <span class="footer-text"><a href="https://github.com/akbknight/Ai-automation">GitHub</a> · <a href="https://linkedin.com/in/akshaykumardl">LinkedIn</a></span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
